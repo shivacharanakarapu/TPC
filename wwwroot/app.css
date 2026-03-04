@@ -1,0 +1,173 @@
+/* --- 1. TYPOGRAPHY & FOUNDATIONS --- */
+@import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+html, body {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    line-height: 32px;
+    color: #212529;
+    background-color: #ffffff;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Headings Hierarchy */
+h1, .h1 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 48px;
+}
+
+h2, .h2 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+}
+
+h3, .h3 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 32px;
+}
+
+h4, .h4 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 28px;
+}
+
+/* --- 2. COLOR PALETTE --- */
+:root {
+    --de-blue-primary: #005a8b;
+    --de-blue-dark: #00415B;
+    --de-blue-light: #006bb7;
+    --de-grey-cool: #f8f9fa;
+}
+
+/* --- 3. LAYOUT & COMPONENTS --- */
+
+/* Official State Banner */
+.state-banner-wrapper {
+    background-color: var(--de-blue-dark) !important;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 2000; /* Highest layer */
+}
+
+/* The Overlay Header - FIX: Moved to Top */
+.overlay-header {
+    position: absolute;
+    top: 0; /* Align to the very top of the map container */
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Map Container - Ensure it is the reference for the absolute header */
+.map-container {
+    position: relative; /* This is required for 'top: 0' to work correctly */
+    height: calc(100vh - 120px); /* Adjust based on your banner + nav height */
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Primary Navigation */
+.nav-link {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600 !important;
+    font-size: 16px;
+    color: #495057 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    padding: 1rem 1.5rem !important;
+    border-bottom: 4px solid transparent;
+    transition: all 0.2s ease-in-out;
+}
+
+    .nav-link:hover, .nav-link.active {
+        color: var(--de-blue-primary) !important;
+        border-bottom: 4px solid var(--de-blue-primary) !important;
+        background-color: var(--de-grey-cool);
+    }
+
+/* Search Bar Styling */
+.search-container {
+    max-width: 400px;
+    width: 100%;
+}
+
+/* --- 4. ACCESSIBILITY & UTILITY --- */
+/* Ensure the page doesn't scroll, only the sidebar if needed */
+html, body, .page {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* Delaware Blue */
+.btn-primary-delaware {
+    background-color: #005a8b !important;
+    border: none;
+}
+
+/* --- 5. FLOATING SIDEBAR --- */
+.floating-sidebar {
+    position: absolute;
+    top: 4.5rem;
+    left: 15px;
+    width: 280px;
+    max-height: calc(100% - 4.5rem - 15px);
+    overflow-y: auto;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    z-index: 500;
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease;
+    pointer-events: auto;
+}
+
+.floating-sidebar:hover {
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.floating-sidebar .form-control {
+    background-color: rgba(255, 255, 255, 0.6);
+    transition: background-color 0.3s ease;
+}
+
+.floating-sidebar:hover .form-control {
+    background-color: #ffffff;
+}
+
+.floating-sidebar .btn-outline-dark {
+    background-color: rgba(255, 255, 255, 0.5);
+    transition: background-color 0.3s ease;
+}
+
+.floating-sidebar:hover .btn-outline-dark {
+    background-color: #ffffff;
+}
+
+/* Fixes the main container to fill available height */
+main {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+

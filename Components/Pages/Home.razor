@@ -1,0 +1,28 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+@* 1. TOP UTILITY BAR (Fixed to top, not floating) *@
+
+@* 2. MAIN CONTENT AREA (Map fills background, sidebar floats over it) *@
+<div class="map-wrapper" style="height: calc(100vh - 160px); position: relative;">
+
+    @* MAP AREA — full background *@
+    <div id="mapDiv" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+    </div>
+
+    @* SIDEBAR — transparent, floating over the map *@
+    <div class="floating-sidebar">
+        <h5 class="fw-bold">Parcel Tools</h5>
+        <hr />
+        <div class="mb-3">
+            <input type="text" class="form-control" placeholder="Parcel ID : 11-111-11">
+        </div>
+        <div class="mb-3">
+            <input type="text" class="form-control" placeholder="Parcel Address : Broom St">
+        </div>
+        <button class="btn btn-outline-dark w-100 mb-2" style="--bs-btn-hover-color: black;">Get Parcels Details</button>
+        <button class="btn btn-outline-dark w-100" style="--bs-btn-hover-color: black;">Export Data</button>
+    </div>
+
+</div>
