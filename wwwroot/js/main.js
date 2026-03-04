@@ -2,12 +2,15 @@
 let Map, MapView, GraphicsLayer, TileLayer, VectorTileLayer, FeatureLayer, SketchViewModel, Basemap;
 let Extent, SimpleMarkerSymbol, SpatialReference, Graphic, Point, SimpleRenderer, SimpleLineSymbol;
 let addressToLocations, locationToAddress, PopupTemplate, geometryService, BufferParameters, Query;
-let Legend, Expand, LayerList, Compass, Locate;
+let Legend, Expand, LayerList, Compass, Locate, locator;
 
 let view;
+let highlightGraphic;
 
 const addProject = {
-    createMap: createMap
+    createMap: createMap,
+    enableCursorCoordinates: enableCursorCoordinates,
+    enableAddressSuggest: enableAddressSuggest
 };
 
 async function ensureArcGIS() {
@@ -42,6 +45,12 @@ async function ensureArcGIS() {
 
         const _Locate = await $arcgis.import("@arcgis/core/widgets/Locate.js");
         Locate = _Locate && (_Locate.default ?? _Locate);
+
+        const _locator = await $arcgis.import("@arcgis/core/rest/locator.js");
+        locator = _locator && (_locator.default ?? _locator);
+
+        const _Graphic = await $arcgis.import("@arcgis/core/Graphic.js");
+        Graphic = _Graphic && (_Graphic.default ?? _Graphic);
 
         geometryService = await $arcgis.import("@arcgis/core/rest/geometryService.js");
         
@@ -97,6 +106,171 @@ async function createMap() {
 
     const locate = new Locate({ view });
     view.ui.add(locate, "top-right");
+
+    // Zoom to clicked location and drop/update highlight
+    view.on("click", (event) => {
+        if (!event.mapPoint) return;
+        const { longitude, latitude } = event.mapPoint;
+        view.goTo({ center: [longitude, latitude], zoom: 17 });
+
+        if (highlightGraphic) {
+            view.graphics.remove(highlightGraphic);
+            highlightGraphic = null;
+        }
+
+        if (Graphic) {
+            highlightGraphic = new Graphic({
+                geometry: {
+                    type: "point",
+                    x: event.mapPoint.longitude,
+                    y: event.mapPoint.latitude,
+                    spatialReference: { wkid: 4326 }
+                },
+                symbol: {
+                    type: "simple-marker",
+                    style: "circle",
+                    size: 14,
+                    color: [255, 0, 0, 0.9],
+                    outline: null
+                }
+            });
+            view.graphics.add(highlightGraphic);
+        }
+    });
+}
+
+function enableCursorCoordinates(displayId) {
+    const el = document.getElementById(displayId);
+    if (!el || !view) return;
+
+    view.on("pointer-move", (event) => {
+        const mapPoint = view.toMap(event);
+        if (!mapPoint) return;
+        const lat = mapPoint.latitude?.toFixed(6) ?? "-";
+        const lon = mapPoint.longitude?.toFixed(6) ?? "-";
+        el.textContent = `Lat: ${lat}, Lon: ${lon}`;
+    });
+}
+
+async function enableAddressSuggest(inputId, suggestionsContainerId) {
+    // Map creation already loads ArcGIS. We don't rely on locator.suggestLocations here; use REST fetch for reliability.
+    const input = document.getElementById(inputId);
+    const list = document.getElementById(suggestionsContainerId);
+    if (!input || !list) return;
+
+    const geocodeSuggestUrl = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest";
+    const geocodeFindUrl = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates";
+    // Delaware bounding box to bias/limit suggestions
+    const searchExtent = {
+        xmin: -75.789,
+        ymin: 38.451,
+        xmax: -74.986,
+        ymax: 39.839,
+        spatialReference: { wkid: 4326 }
+    };
+    let debounceHandle;
+
+    const clearList = () => {
+        list.innerHTML = "";
+        list.style.display = "none";
+    };
+
+    const selectLocation = async (text) => {
+        if (!view) return;
+        try {
+            const url = `${geocodeFindUrl}?f=json` +
+                `&singleLine=${encodeURIComponent(text)}` +
+                `&maxLocations=1` +
+                `&outFields=*` +
+                `&countryCode=USA` +
+                `&searchExtent=${encodeURIComponent(JSON.stringify(searchExtent))}`;
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`Find HTTP ${resp.status}`);
+            const data = await resp.json();
+            const candidates = data?.candidates ?? [];
+            if (candidates.length === 0) return;
+            const loc = candidates[0].location;
+            if (loc && typeof loc.x === "number" && typeof loc.y === "number") {
+                view.goTo({ center: [loc.x, loc.y], zoom: 17 });
+
+                if (highlightGraphic) {
+                    view.graphics.remove(highlightGraphic);
+                    highlightGraphic = null;
+                }
+
+                if (Graphic) {
+                    highlightGraphic = new Graphic({
+                        geometry: {
+                            type: "point",
+                            x: loc.x,
+                            y: loc.y,
+                            spatialReference: { wkid: 4326 }
+                        },
+                        symbol: {
+                            type: "simple-marker",
+                            style: "circle",
+                            size: 14,
+                            color: [255, 0, 0, 0.9],
+                            outline: null
+                        }
+                    });
+                    view.graphics.add(highlightGraphic);
+                }
+            }
+        } catch (err) {
+            console.error("main.js: address select/zoom failed", err);
+        }
+    };
+
+    input.addEventListener("blur", () => {
+        setTimeout(clearList, 150);
+    });
+
+    input.addEventListener("input", () => {
+        const text = input.value.trim();
+        clearTimeout(debounceHandle);
+
+        if (!text) {
+            clearList();
+            return;
+        }
+
+        debounceHandle = setTimeout(async () => {
+            try {
+                const url = `${geocodeSuggestUrl}?f=json` +
+                    `&text=${encodeURIComponent(text)}` +
+                    `&maxSuggestions=10` +
+                    `&countryCode=USA` +
+                    `&searchExtent=${encodeURIComponent(JSON.stringify(searchExtent))}`;
+                const resp = await fetch(url);
+                if (!resp.ok) throw new Error(`Suggest HTTP ${resp.status}`);
+                const data = await resp.json();
+                const results = data?.suggestions ?? [];
+
+                if (!results || results.length === 0) {
+                    clearList();
+                    return;
+                }
+
+                list.innerHTML = results
+                    .map(r => `<div class="address-suggest-item" data-value="${(r.text || "").replace(/"/g, '&quot;')}">${r.text || ""}</div>`)
+                    .join("");
+                list.style.display = "block";
+
+                [...list.querySelectorAll('.address-suggest-item')].forEach(item => {
+                    item.addEventListener('mousedown', () => {
+                        input.value = item.getAttribute('data-value') ?? item.textContent;
+                        clearList();
+                        const chosen = item.getAttribute('data-value') ?? item.textContent ?? "";
+                        if (chosen) selectLocation(chosen);
+                    });
+                });
+            } catch (err) {
+                console.error("main.js: address suggest failed", err);
+                clearList();
+            }
+        }, 200);
+    });
 }
 
 window.addProject = addProject;

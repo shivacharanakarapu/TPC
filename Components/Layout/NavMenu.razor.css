@@ -108,6 +108,21 @@
     width: auto;
 }
 
+.dropdown-menu {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+.dropdown-menu .dropdown-item {
+    color: #fff !important;
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
+    background-color: rgba(255,255,255,0.1) !important;
+    color: #fff !important;
+}
+
 .floating-transparent-nav {
     position: relative;
     z-index: 1000;

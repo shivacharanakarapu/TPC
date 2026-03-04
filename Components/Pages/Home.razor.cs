@@ -17,6 +17,8 @@ public partial class Home : ComponentBase, IAsyncDisposable
             try
             {
                 await JS.InvokeVoidAsync("addProject.createMap", "mapDiv");
+                await JS.InvokeVoidAsync("addProject.enableCursorCoordinates", "mapCoords");
+                await JS.InvokeVoidAsync("addProject.enableAddressSuggest", "parcelAddressInput", "addressSuggestions");
             }
             catch (JSDisconnectedException)
             {

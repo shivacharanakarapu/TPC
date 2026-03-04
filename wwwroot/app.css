@@ -13,6 +13,45 @@ html, body {
     padding: 0;
 }
 
+.map-coords {
+    position: absolute;
+    left: 15px;
+    bottom: 15px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    z-index: 1500;
+    pointer-events: none;
+}
+
+.address-suggest-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 3000;
+    display: none;
+}
+
+.address-suggest-item {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    color: #212529;
+}
+
+.address-suggest-item:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
 /* Headings Hierarchy */
 h1, .h1 {
     font-family: 'Poppins', sans-serif;
@@ -128,7 +167,7 @@ html, body, .page {
     left: 15px;
     width: 280px;
     max-height: calc(100% - 4.5rem - 15px);
-    overflow-y: auto;
+    overflow: visible;
     padding: 20px;
     background-color: rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(4px);
@@ -141,24 +180,26 @@ html, body, .page {
 }
 
 .floating-sidebar:hover {
-    background-color: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-.floating-sidebar .form-control {
-    background-color: rgba(255, 255, 255, 0.6);
-    transition: background-color 0.3s ease;
-}
+    .floating-sidebar .form-control {
+        background-color: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(8px);
+        transition: background-color 0.3s ease;
+    }
 
 .floating-sidebar:hover .form-control {
     background-color: #ffffff;
 }
 
-.floating-sidebar .btn-outline-dark {
-    background-color: rgba(255, 255, 255, 0.5);
-    transition: background-color 0.3s ease;
-}
+    .floating-sidebar .btn-outline-dark {
+        background-color: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(8px);
+        transition: background-color 0.3s ease;
+    }
 
 .floating-sidebar:hover .btn-outline-dark {
     background-color: #ffffff;
