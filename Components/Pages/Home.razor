@@ -1,31 +1,58 @@
-﻿@page "/"
+﻿@using TPC.Models
+@inject TPC.Services.ParcelService ParcelService
+
+@page "/"
 
 <PageTitle>Home</PageTitle>
 
-@* 1. TOP UTILITY BAR (Fixed to top, not floating) *@
-
-@* 2. MAIN CONTENT AREA (Map fills background, sidebar floats over it) *@
 <div class="map-wrapper" style="height: calc(100vh - 160px); position: relative;">
 
-    @* MAP AREA — full background *@
-    <div id="mapDiv" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
-    </div>
+    @* MAP AREA *@
+    <div id="mapDiv" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div>
 
     <div id="mapCoords" class="map-coords">Lat: ---, Lon: ---</div>
 
-    @* SIDEBAR — transparent, floating over the map *@
+    @* SIDEBAR *@
     <div class="floating-sidebar">
         <h5 class="text-white">Parcel Search</h5>
         <hr />
+        
         <div class="mb-3">
-            <input type="text" class="form-control" placeholder="Parcel ID : 11-111-11">
+            @* We added @bind here to capture the Parcel ID *@
+            <input type="text" class="form-control" placeholder="Parcel ID : 0000000000" @bind="searchId">
         </div>
-        <div class="mb-3 position-relative">
-            <input id="parcelAddressInput" type="text" class="form-control" placeholder="Parcel Address : Broom St" autocomplete="off">
-            <div id="addressSuggestions" class="address-suggest-list"></div>
-        </div>
-        <button class="btn btn-outline-dark w-100 mb-2" style="--bs-btn-hover-color: black;">Get Parcels Details</button>
-        <button class="btn btn-outline-dark w-100" style="--bs-btn-hover-color: black;">Export Data</button>
-    </div>
 
+        <div class="mb-3">
+            <button class="btn btn-primary w-100" @onclick="HandleSearch">Search Parcel</button>
+        </div>
+
+        @* Result Display Area *@
+        @if (currentParcel != null)
+        {
+            <div class="mt-3 p-2 bg-dark text-white rounded border border-secondary" style="font-size: 0.9rem;">
+                <p class="mb-1"><strong>Owner:</strong> @currentParcel.OwnerName</p>
+                <p class="mb-1"><strong>Address:</strong> @currentParcel.ParcelAddress</p>
+                <p class="mb-0"><strong>Land Value:</strong> @currentParcel.LandValue.ToString("C")</p>
+            </div>
+        }
+        else if (isSearching)
+        {
+            <p class="text-info small">Searching database...</p>
+        }
+    </div>
 </div>
+
+@code {
+    private string searchId = "";
+    private Parcel? currentParcel;
+    private bool isSearching = false;
+
+    private async Task HandleSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchId)) return;
+
+        isSearching = true;
+        currentParcel = await ParcelService.GetParcelById(searchId);
+        isSearching = false;
+    }
+}

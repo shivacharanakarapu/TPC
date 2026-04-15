@@ -1,11 +1,19 @@
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Data.SqlClient;
+using System.Data;
 using TPC.Components;
+using TPC.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddTransient<IDbConnection>(sp => 
+    new SqlConnection(builder.Configuration.GetConnectionString("StateParcelDb")));
+
+builder.Services.AddScoped<ParcelService>();
 
 builder.Services.AddResponseCompression(opts =>
 {
